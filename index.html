@@ -6,29 +6,29 @@
     <script src="https://telegram.org"></script>
     <script src="https://cdn.jsdelivr.net"></script>
     <style>
-        body { background: #1a1a1a; color: white; font-family: sans-serif; text-align: center; padding: 20px; }
-        .card { background: linear-gradient(145deg, #2c1e14, #000); border: 1px solid #c6a667; border-radius: 20px; padding: 20px; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
-        .bal { font-size: 44px; color: #c6a667; font-weight: bold; margin: 10px 0; }
-        .btn { width: 100%; padding: 15px; margin: 10px 0; border-radius: 12px; border: none; font-weight: bold; font-size: 16px; }
-        .btn-gold { background: #c6a667; color: #000; }
-        .btn-outline { background: none; border: 1px solid #c6a667; color: #c6a667; }
+        body { background: #1a1a1a; color: #fff; font-family: sans-serif; text-align: center; padding: 20px; margin: 0; }
+        .card { background: linear-gradient(135deg, #3d2b1f, #1a0f0a); border: 2px solid #c6a667; border-radius: 20px; padding: 25px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .bal { font-size: 48px; color: #c6a667; font-weight: bold; margin: 10px 0; }
         #barcode-box { background: white; padding: 10px; border-radius: 10px; display: inline-block; margin-top: 15px; }
-        #admin-area { display: none; margin-top: 20px; border-top: 1px solid #444; padding-top: 20px; }
+        .btn { width: 100%; padding: 18px; margin: 10px 0; border-radius: 15px; border: none; font-weight: 900; font-size: 16px; cursor: pointer; text-transform: uppercase; }
+        .btn-gold { background: #c6a667; color: #000; box-shadow: 0 4px 15px rgba(198, 166, 103, 0.3); }
+        .btn-black { background: #000; border: 1px solid #c6a667; color: #c6a667; }
+        #admin-area { display: none; margin-top: 30px; padding-top: 20px; border-top: 1px solid #333; }
     </style>
 </head>
 <body>
     <div class="card">
-        <div style="font-size: 12px; opacity: 0.6;">COFFEE BUDES LOYALTY</div>
+        <div style="font-size: 12px; opacity: 0.6; letter-spacing: 2px;">COFFEE BUDES</div>
         <div class="bal" id="bal">0.00</div>
-        <div style="font-size: 14px; opacity: 0.8;">бонусов на счете</div>
+        <div style="font-size: 14px; opacity: 0.8;">бонусов накоплено</div>
         <div id="barcode-box"><svg id="barcode"></svg></div>
     </div>
 
-    <button class="btn btn-outline" id="inviteBtn">👥 Пригласить друга</button>
+    <button class="btn btn-black" onclick="invite()">👥 Пригласить друга</button>
 
     <div id="admin-area">
-        <div style="color: #c6a667; margin-bottom: 10px; font-weight: bold;">ПАНЕЛЬ КАССИРА</div>
-        <button class="btn btn-gold" id="scanBtn">📸 ОТКРЫТЬ СКАНЕР</button>
+        <div style="color: #c6a667; margin-bottom: 15px; font-weight: bold; font-size: 14px;">ИНСТРУМЕНТЫ КАССИРА</div>
+        <button class="btn btn-gold" onclick="startScan()">📸 ОТКРЫТЬ СКАНЕР</button>
     </div>
 
     <script>
@@ -36,27 +36,40 @@
         tg.expand();
         tg.ready();
 
-        const params = new URLSearchParams(window.location.search);
-        const uid = params.get('id');
-        const balance = params.get('bal') || '0.00';
-        const isAdmin = params.get('admin') === '1';
+        const p = new URLSearchParams(window.location.search);
+        const uid = p.get('id');
+        const bal = p.get('bal') || '0.00';
+        const admin = p.get('admin');
 
-        document.getElementById('bal').innerText = balance;
-        if (isAdmin) document.getElementById('admin-area').style.display = 'block';
+        document.getElementById('bal').innerText = bal;
 
-        JsBarcode("#barcode", uid, { format: "CODE128", width: 2, height: 50, displayValue: true });
+        // Рисуем штрих-код
+        try {
+            JsBarcode("#barcode", uid, {
+                format: "CODE128",
+                width: 2,
+                height: 60,
+                displayValue: true,
+                lineColor: "#000"
+            });
+        } catch(e) { console.error(e); }
 
-        document.getElementById('inviteBtn').onclick = () => {
+        // Показываем админку если пришел флаг admin=1
+        if (admin === '1') {
+            document.getElementById('admin-area').style.display = 'block';
+        }
+
+        function invite() {
             const link = "https://t.me" + uid;
             tg.openTelegramLink("https://t.me" + encodeURIComponent(link));
-        };
+        }
 
-        document.getElementById('scanBtn').onclick = () => {
-            tg.showScanQrPopup({ text: "Сканируй карту гостя" }, (text) => {
-                tg.sendData(text);
+        function startScan() {
+            tg.showScanQrPopup({ text: "Сканируй штрих-код клиента" }, (text) => {
+                tg.sendData(text); // Отправляем ID боту
                 tg.closeScanQrPopup();
             });
-        };
+        }
     </script>
 </body>
 </html>
