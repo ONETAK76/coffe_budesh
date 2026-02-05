@@ -3,34 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- Скрипт телеграма ОБЯЗАТЕЛЕН в head -->
     <script src="https://telegram.org"></script>
+    <script src="https://cdn.jsdelivr.net"></script>
     <style>
-        body { background: #000; color: #fff; font-family: sans-serif; margin: 0; padding: 20px; text-align: center; }
-        .card { background: linear-gradient(145deg, #2c1e14, #000); border-radius: 15px; padding: 20px; border: 1px solid #c6a667; margin-bottom: 20px; }
-        .bal-val { font-size: 40px; font-weight: bold; color: #c6a667; }
-        .btn { width: 100%; padding: 15px; margin: 5px 0; border-radius: 10px; border: none; font-weight: bold; font-size: 16px; cursor: pointer; }
+        body { background: #1a1a1a; color: white; font-family: sans-serif; text-align: center; padding: 20px; }
+        .card { background: linear-gradient(145deg, #2c1e14, #000); border: 1px solid #c6a667; border-radius: 20px; padding: 20px; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        .bal { font-size: 44px; color: #c6a667; font-weight: bold; margin: 10px 0; }
+        .btn { width: 100%; padding: 15px; margin: 10px 0; border-radius: 12px; border: none; font-weight: bold; font-size: 16px; }
         .btn-gold { background: #c6a667; color: #000; }
         .btn-outline { background: none; border: 1px solid #c6a667; color: #c6a667; }
-        #bc-img { background: white; padding: 10px; border-radius: 5px; margin-top: 15px; width: 80%; }
-        .admin-box { display: none; margin-top: 20px; padding: 15px; border: 1px dashed #fff; border-radius: 10px; }
+        #barcode-box { background: white; padding: 10px; border-radius: 10px; display: inline-block; margin-top: 15px; }
+        #admin-area { display: none; margin-top: 20px; border-top: 1px solid #444; padding-top: 20px; }
     </style>
 </head>
 <body>
     <div class="card">
-        <div style="color: #888; font-size: 12px;">COFFEE BUDES</div>
-        <div class="bal-val" id="bal">0.00</div>
-        <div style="font-size: 12px; color: #888;">бонусов (кэшбэк 3%)</div>
-        <!-- Генерируем штрих-код через бесплатный API, чтобы не грузить библиотеки -->
-        <img id="bc-img" src="" alt="штрих-код">
+        <div style="font-size: 12px; opacity: 0.6;">COFFEE BUDES LOYALTY</div>
+        <div class="bal" id="bal">0.00</div>
+        <div style="font-size: 14px; opacity: 0.8;">бонусов на счете</div>
+        <div id="barcode-box"><svg id="barcode"></svg></div>
     </div>
 
     <button class="btn btn-outline" id="inviteBtn">👥 Пригласить друга</button>
 
-    <div class="admin-box" id="adminArea">
-        <div style="margin-bottom:10px; font-weight:bold;">ПАНЕЛЬ КАССИРА</div>
-        <button class="btn btn-gold" id="scanBtn">📸 СКАНЕР (ПРИЕМ)</button>
-        <button class="btn btn-outline" id="repBtn">📊 ОТЧЕТ</button>
+    <div id="admin-area">
+        <div style="color: #c6a667; margin-bottom: 10px; font-weight: bold;">ПАНЕЛЬ КАССИРА</div>
+        <button class="btn btn-gold" id="scanBtn">📸 ОТКРЫТЬ СКАНЕР</button>
     </div>
 
     <script>
@@ -40,30 +38,24 @@
 
         const params = new URLSearchParams(window.location.search);
         const uid = params.get('id');
+        const balance = params.get('bal') || '0.00';
         const isAdmin = params.get('admin') === '1';
 
-        // Ставим баланс и штрих-код
-        document.getElementById('bal').innerText = params.get('bal') || '0.00';
-        document.getElementById('bc-img').src = "https://bwipjs-api.metafloor.com" + uid + "&scale=3&rotate=N&includetext";
+        document.getElementById('bal').innerText = balance;
+        if (isAdmin) document.getElementById('admin-area').style.display = 'block';
 
-        // Показываем админку
-        if (isAdmin) document.getElementById('adminArea').style.display = 'block';
+        JsBarcode("#barcode", uid, { format: "CODE128", width: 2, height: 50, displayValue: true });
 
-        // Логика кнопок
         document.getElementById('inviteBtn').onclick = () => {
             const link = "https://t.me" + uid;
-            tg.openTelegramLink("https://t.me" + encodeURIComponent(link) + "&text=" + encodeURIComponent("Пойдем пить кофе! Дарят 50 бонусов за первую покупку."));
+            tg.openTelegramLink("https://t.me" + encodeURIComponent(link));
         };
 
         document.getElementById('scanBtn').onclick = () => {
-            tg.showScanQrPopup({ text: "Сканируй код гостя" }, (text) => {
-                tg.sendData("SCAN:" + text);
+            tg.showScanQrPopup({ text: "Сканируй карту гостя" }, (text) => {
+                tg.sendData(text);
                 tg.closeScanQrPopup();
             });
-        };
-
-        document.getElementById('repBtn').onclick = () => {
-            tg.sendData("ACTION:REPORT");
         };
     </script>
 </body>
