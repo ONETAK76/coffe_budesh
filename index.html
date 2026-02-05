@@ -6,44 +6,65 @@
     <script src="https://telegram.org"></script>
     <script src="https://cdn.jsdelivr.net"></script>
     <style>
-        body { background: #000; color: #fff; font-family: -apple-system, sans-serif; display: flex; justify-content: center; padding-top: 20px; margin: 0; }
-        .wallet-card { width: 320px; height: 480px; background: linear-gradient(145deg, #2c1e14, #1a0f0a); border-radius: 20px; padding: 25px; border: 1px solid #4a3427; box-shadow: 0 20px 40px rgba(0,0,0,0.8); display: flex; flex-direction: column; justify-content: space-between; }
-        .logo { font-weight: 800; font-size: 18px; color: #e4d5c9; letter-spacing: 1px; }
-        .balance-label { font-size: 12px; color: #a1887f; text-transform: uppercase; margin-top: 40px; }
-        .balance-value { font-size: 42px; font-weight: 700; color: #fff; margin-bottom: 20px; }
-        .barcode-box { background: #fff; border-radius: 12px; padding: 15px; display: flex; justify-content: center; align-items: center; }
-        .admin-btn { background: #e4d5c9; color: #1a0f0a; border: none; padding: 15px; border-radius: 12px; font-weight: bold; width: 100%; display: none; margin-top: 15px; cursor: pointer; }
+        :root { --gold: #c6a667; --coffee: #2c1e14; }
+        body { background: #000; color: #fff; font-family: -apple-system, sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .wallet-card { width: 100%; max-width: 340px; background: linear-gradient(145deg, #2c1e14, #130a06); border-radius: 20px; padding: 20px; border: 1px solid #4a3427; box-shadow: 0 15px 35px rgba(0,0,0,0.8); }
+        .header { display: flex; justify-content: space-between; font-weight: 800; color: var(--gold); margin-bottom: 30px; }
+        .balance-val { font-size: 48px; font-weight: 700; margin: 10px 0; }
+        .barcode-box { background: #fff; border-radius: 12px; padding: 10px; margin-top: 20px; display: flex; justify-content: center; }
+        .nav-tabs { display: flex; width: 100%; max-width: 340px; margin-top: 25px; gap: 10px; }
+        .tab-btn { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--gold); background: none; color: var(--gold); font-weight: bold; cursor: pointer; }
+        .admin-section { display: none; width: 100%; max-width: 340px; margin-top: 20px; background: #1a1a1a; padding: 15px; border-radius: 15px; border: 1px dashed var(--gold); }
+        .main-btn { width: 100%; padding: 15px; background: var(--gold); color: #000; border: none; border-radius: 12px; font-weight: 800; font-size: 16px; margin-top: 10px; }
+        #debug { font-size: 10px; color: #444; margin-top: 10px; }
     </style>
 </head>
 <body>
-    <div class="wallet-card">
-        <div class="logo">COFFEE BUDES</div>
-        <div>
-            <div class="balance-label">Бонусный баланс</div>
-            <div class="balance-value" id="bal">0.00</div>
-        </div>
+    <div class="wallet-card" id="user-card">
+        <div class="header"><span>COFFEE BUDES</span><span>LOYALTY</span></div>
+        <div style="color: #a1887f; font-size: 12px; text-transform: uppercase;">Бонусный баланс</div>
+        <div class="balance-val" id="bal">0.00</div>
         <div class="barcode-box"><svg id="barcode"></svg></div>
-        <button id="adminBtn" class="admin-btn">📸 ОТКРЫТЬ СКАНЕР</button>
     </div>
+
+    <div class="nav-tabs">
+        <button class="tab-btn" onclick="tg.openLink('https://t.me' + userId)">👥 Позвать друга</button>
+    </div>
+
+    <div class="admin-section" id="admin-area">
+        <div style="color: var(--gold); font-weight: bold; margin-bottom: 10px;">ПАНЕЛЬ КАССИРА</div>
+        <button class="main_btn" style="background: #fff;" onclick="startScan()">📸 СКАНЕР (ПРИЕМ ЧЕКА)</button>
+        <button class="main_btn" onclick="tg.sendData('ACTION:REPORT')">📊 ОТЧЕТ ЗА ДЕНЬ</button>
+    </div>
+
+    <div id="debug"></div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
+        tg.ready();
+
         const params = new URLSearchParams(window.location.search);
         const userId = params.get('id');
+        const isAdmin = params.get('admin') === '1';
+        
         document.getElementById('bal').innerText = params.get('bal') || '0.00';
-        if (params.get('admin') === '1') document.getElementById('adminBtn').style.display = 'block';
+        if (isAdmin) document.getElementById('admin-area').style.display = 'block';
 
-        JsBarcode("#barcode", userId, { format: "CODE128", width: 2, height: 60, displayValue: true });
+        try {
+            JsBarcode("#barcode", userId, { format: "CODE128", width: 2, height: 60, displayValue: true });
+        } catch(e) { document.getElementById('debug').innerText = e; }
 
-        document.getElementById('adminBtn').onclick = () => {
-            tg.showScanQrPopup({ text: "Сканируй код гостя" }, (text) => {
-                tg.sendData(text); // Отправка ID боту
+        function startScan() {
+            tg.showScanQrPopup({ text: "Сканируй код гостя" }, function(text) {
+                tg.sendData("SCAN:" + text);
                 tg.closeScanQrPopup();
             });
-        };
+        }
     </script>
 </body>
 </html>
+
+
 
 
