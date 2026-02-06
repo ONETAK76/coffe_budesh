@@ -2,73 +2,59 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://telegram.org"></script>
     <script src="https://cdn.jsdelivr.net"></script>
     <style>
-        body { font-family: sans-serif; text-align: center; padding: 20px; background: #f4f4f9; }
-        .card { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        #barcode { width: 100%; max-width: 250px; }
-        #admin-panel { display: none; margin-top: 20px; }
-        button { background: #0088cc; color: white; border: none; padding: 15px; border-radius: 10px; width: 100%; cursor: pointer; font-weight: bold; }
+        body { text-align: center; font-family: sans-serif; background: #eee; }
+        .card { background: white; margin: 20px; padding: 20px; border-radius: 15px; }
+        #admin-panel { display: none; }
+        button { background: #0088cc; color: white; border: none; padding: 15px; width: 100%; border-radius: 10px; }
     </style>
 </head>
 <body>
     <div class="card">
-        <h3>Карта лояльности</h3>
         <svg id="barcode"></svg>
-        <p>Баланс: <b id="balance">0</b> ⭐️</p>
+        <h2 id="balance">0.00</h2>
     </div>
-
     <div id="admin-panel">
-        <button onclick="startScan()">СКАНИРОВАТЬ ШТРИХКОД</button>
+        <button onclick="scan()">СКАНИРОВАТЬ</button>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.expand();
+        const BACKEND_URL = 'ССЫЛКА_ОТ_LOCALTUNNEL'; // ВАЖНО: СЮДА ССЫЛКУ ИЗ ПУНКТА 2
+        const userId = tg.initDataUnsafe?.user?.id || 0;
 
-        const userId = tg.initDataUnsafe?.user?.id || 12345;
-        // УКАЖИТЕ АДРЕС ВАШЕГО ПАЙТОН-СЕРВЕРА (например https://abc.ngrok-free.app)
-        const BACKEND_URL = 'https://ваш-пайтон-сервер.com';
-
-        function init() {
-            JsBarcode("#barcode", userId.toString(), {format: "CODE128", displayValue: true});
-
+        function load() {
+            JsBarcode("#barcode", userId.toString());
             fetch(`${BACKEND_URL}/get_data`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({user_id: userId})
             })
-            .then(r => r.json())
-            .then(data => {
-                document.getElementById('balance').innerText = data.balance.toFixed(2);
+            .then(r => r.json()).then(data => {
+                document.getElementById('balance').innerText = data.balance.toFixed(2) + " ⭐️";
                 if(data.is_admin) document.getElementById('admin-panel').style.display = 'block';
             });
         }
 
-        function startScan() {
-            tg.showScanQrPopup({ text: "Сканируйте ID клиента" }, (result) => {
-                if(!result) return true;
-                const amount = prompt("Сумма операции:");
-                if(!amount || isNaN(amount)) return true;
-
-                const action = confirm("ОК - Начислить 3%\\nОтмена - Списать баллы") ? 'add' : 'sub';
-
+        function scan() {
+            tg.showScanQrPopup({text: "Скан"}, (res) => {
+                const sum = prompt("Сумма?");
+                const mode = confirm("ОК - Начислить 3%, Отмена - Списать") ? 'add' : 'sub';
                 fetch(`${BACKEND_URL}/transaction`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({admin_id: userId, target_id: result, amount: amount, action: action})
-                })
-                .then(r => r.json())
-                .then(data => { alert(data.message); location.reload(); });
+                    body: JSON.stringify({admin_id: userId, target_id: res, amount: sum, action: mode})
+                }).then(r => r.json()).then(d => { alert(d.message || "Готово"); location.reload(); });
                 return true;
             });
         }
-        init();
+        load();
     </script>
 </body>
 </html>
+
 
 
 
