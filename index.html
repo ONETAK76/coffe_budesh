@@ -1,76 +1,47 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Coffee Budes Card</title>
     <script src="https://telegram.org"></script>
-    <script src="https://cdn.jsdelivr.net"></script>
-    <style>
-        body { background: #1a1a1a; color: #fff; font-family: sans-serif; text-align: center; padding: 20px; margin: 0; }
-        .card { background: linear-gradient(135deg, #3d2b1f, #1a0f0a); border: 2px solid #c6a667; border-radius: 20px; padding: 25px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .bal { font-size: 48px; color: #c6a667; font-weight: bold; margin: 10px 0; }
-        #barcode-box { background: white; padding: 10px; border-radius: 10px; display: inline-block; margin-top: 15px; }
-        .btn { width: 100%; padding: 18px; margin: 10px 0; border-radius: 15px; border: none; font-weight: 900; font-size: 16px; cursor: pointer; text-transform: uppercase; }
-        .btn-gold { background: #c6a667; color: #000; box-shadow: 0 4px 15px rgba(198, 166, 103, 0.3); }
-        .btn-black { background: #000; border: 1px solid #c6a667; color: #c6a667; }
-        #admin-area { display: none; margin-top: 30px; padding-top: 20px; border-top: 1px solid #333; }
-    </style>
+    <script src="https://cdnjs.cloudflare.com"></script>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="card">
-        <div style="font-size: 12px; opacity: 0.6; letter-spacing: 2px;">COFFEE BUDES</div>
-        <div class="bal" id="bal">0.00</div>
-        <div style="font-size: 14px; opacity: 0.8;">бонусов накоплено</div>
-        <div id="barcode-box"><svg id="barcode"></svg></div>
+    <div id="app">
+        <!-- Карта лояльности -->
+        <div class="card-container">
+            <div class="loyalty-card">
+                <div class="card-header">
+                    <span class="brand">COFFEE BUDES</span>
+                    <span id="balance-value">0.00 б.</span>
+                </div>
+                <div id="qrcode"></div>
+                <p class="card-footer">Ваш ID: <span id="user-id">---</span></p>
+            </div>
+        </div>
+
+        <!-- Табы -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showTab('menu')">☕ Меню</button>
+            <button class="tab-btn" onclick="showTab('history')">📜 История</button>
+        </div>
+
+        <!-- Контент: Меню -->
+        <div id="menu-section" class="tab-content">
+            <div class="products-grid" id="products-list"></div>
+        </div>
+
+        <!-- Контент: История -->
+        <div id="history-section" class="tab-content" style="display:none;">
+            <div id="history-list">
+                <p class="empty-msg">История пуста</p>
+            </div>
+        </div>
     </div>
 
-    <button class="btn btn-black" onclick="invite()">👥 Пригласить друга</button>
-
-    <div id="admin-area">
-        <div style="color: #c6a667; margin-bottom: 15px; font-weight: bold; font-size: 14px;">ИНСТРУМЕНТЫ КАССИРА</div>
-        <button class="btn btn-gold" onclick="startScan()">📸 ОТКРЫТЬ СКАНЕР</button>
-    </div>
-
-    <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-        tg.ready();
-
-        const p = new URLSearchParams(window.location.search);
-        const uid = p.get('id');
-        const bal = p.get('bal') || '0.00';
-        const admin = p.get('admin');
-
-        document.getElementById('bal').innerText = bal;
-
-        // Рисуем штрих-код
-        try {
-            JsBarcode("#barcode", uid, {
-                format: "CODE128",
-                width: 2,
-                height: 60,
-                displayValue: true,
-                lineColor: "#000"
-            });
-        } catch(e) { console.error(e); }
-
-        // Показываем админку если пришел флаг admin=1
-        if (admin === '1') {
-            document.getElementById('admin-area').style.display = 'block';
-        }
-
-        function invite() {
-            const link = "https://t.me" + uid;
-            tg.openTelegramLink("https://t.me" + encodeURIComponent(link));
-        }
-
-        function startScan() {
-            tg.showScanQrPopup({ text: "Сканируй штрих-код клиента" }, (text) => {
-                tg.sendData(text); // Отправляем ID боту
-                tg.closeScanQrPopup();
-            });
-        }
-    </script>
+    <script src="products.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
-
