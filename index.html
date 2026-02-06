@@ -3,45 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Coffee Budes Card</title>
+    <title>Coffee Budes</title>
     <script src="https://telegram.org"></script>
     <script src="https://cdnjs.cloudflare.com"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="app">
-        <!-- Карта лояльности -->
         <div class="card-container">
             <div class="loyalty-card">
                 <div class="card-header">
                     <span class="brand">COFFEE BUDES</span>
-                    <span id="balance-value">0.00 б.</span>
+                    <span id="balance-display" class="balance-badge">0.0 б.</span>
                 </div>
-                <div id="qrcode"></div>
-                <p class="card-footer">Ваш ID: <span id="user-id">---</span></p>
+                <div class="qr-wrapper">
+                    <div id="qrcode"></div>
+                </div>
+                <div class="card-footer">
+                    <span>ID: <span id="uid-label">000000</span></span>
+                </div>
             </div>
         </div>
 
-        <!-- Табы -->
         <div class="tabs">
-            <button class="tab-btn active" onclick="showTab('menu')">☕ Меню</button>
-            <button class="tab-btn" onclick="showTab('history')">📜 История</button>
+            <button class="tab-btn active" onclick="switchTab('menu')">☕ Меню</button>
+            <button class="tab-btn" onclick="switchTab('info')">ℹ️ Инфо</button>
         </div>
 
-        <!-- Контент: Меню -->
         <div id="menu-section" class="tab-content">
-            <div class="products-grid" id="products-list"></div>
+            <div class="products-grid" id="grid"></div>
         </div>
 
-        <!-- Контент: История -->
-        <div id="history-section" class="tab-content" style="display:none;">
-            <div id="history-list">
-                <p class="empty-msg">История пуста</p>
+        <div id="info-section" class="tab-content" style="display:none">
+            <div class="info-block">
+                <h3>Как это работает?</h3>
+                <p>1. Покажите QR-код бариста.</p>
+                <p>2. Получите 3% бонусами с каждой покупки.</p>
+                <p>3. Оплачивайте бонусами до 100% чека.</p>
             </div>
         </div>
     </div>
-
     <script src="products.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
+
+
