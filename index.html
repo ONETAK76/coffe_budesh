@@ -3,49 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Coffee Budes</title>
+    <title>Coffee Budes Card</title>
     <script src="https://telegram.org"></script>
     <script src="https://cdnjs.cloudflare.com"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="app">
-        <div class="card-container">
-            <div class="loyalty-card">
-                <div class="card-header">
-                    <span class="brand">COFFEE BUDES</span>
-                    <span id="balance-display" class="balance-badge">0.0 б.</span>
-                </div>
-                <div class="qr-wrapper">
-                    <div id="qrcode"></div>
-                </div>
-                <div class="card-footer">
-                    <span>ID: <span id="uid-label">000000</span></span>
-                </div>
-            </div>
-        </div>
-
-        <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab('menu')">☕ Меню</button>
-            <button class="tab-btn" onclick="switchTab('info')">ℹ️ Инфо</button>
-        </div>
-
-        <div id="menu-section" class="tab-content">
-            <div class="products-grid" id="grid"></div>
-        </div>
-
-        <div id="info-section" class="tab-content" style="display:none">
-            <div class="info-block">
-                <h3>Как это работает?</h3>
-                <p>1. Покажите QR-код бариста.</p>
-                <p>2. Получите 3% бонусами с каждой покупки.</p>
-                <p>3. Оплачивайте бонусами до 100% чека.</p>
-            </div>
+    <div class="card-container">
+        <div class="loyalty-card">
+            <div class="card-header"><span class="brand">COFFEE BUDES</span></div>
+            <div id="qrcode"></div>
+            <div class="card-footer">ID: <span id="uid-label">---</span></div>
         </div>
     </div>
+    <div class="grid" id="grid"></div>
     <script src="products.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
+
+
 
 
