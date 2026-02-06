@@ -2,69 +2,31 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Coffee Card</title>
-    
-    <!-- ПОЛНАЯ ССЫЛКА НА БИБЛИОТЕКУ QR -->
-    <script src="https://cdnjs.cloudflare.com"></script>
-    
-    <!-- ПОЛНАЯ ССЫЛКА НА TELEGRAM API -->
+    <!-- Подключаем API Telegram -->
     <script src="https://telegram.org"></script>
+    <!-- Встраиваем мини-библиотеку QRCode прямо сюда, чтобы не зависеть от внешних ссылок -->
+    <script src="https://davidshimjs.github.io"></script>
 
     <style>
         body { 
-            background: #1a1a1a; 
-            color: white; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            height: 100vh; 
-            margin: 0; 
-            overflow: hidden;
+            background: #1a1a1a; color: white; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; overflow: hidden;
         }
         .card { 
             background: linear-gradient(135deg, #6f4e37 0%, #3c2a21 100%); 
-            width: 85%; 
-            max-width: 350px;
-            padding: 30px; 
-            border-radius: 25px; 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.6); 
-            text-align: center; 
-            border: 1px solid #8b5e3c; 
+            width: 280px; padding: 30px; border-radius: 25px; text-align: center; 
+            border: 1px solid #8b5e3c; box-shadow: 0 15px 35px rgba(0,0,0,0.5);
         }
-        h2 { 
-            margin: 0; 
-            color: #edc9af; 
-            text-transform: uppercase; 
-            letter-spacing: 2px; 
-            font-size: 16px; 
-        }
-        #balance { 
-            font-size: 48px; 
-            margin: 15px 0; 
-            color: #fff; 
-            font-weight: bold; 
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
+        #user_name { color: #d4a373; font-size: 18px; margin-bottom: 5px; font-weight: bold; text-transform: uppercase; }
+        h2 { margin: 0; color: #edc9af; font-size: 14px; letter-spacing: 1px; opacity: 0.8; }
+        #balance { font-size: 44px; margin: 10px 0; color: #fff; font-weight: 900; }
         #qrcode { 
-            background: white; 
-            padding: 15px; 
-            display: inline-block; 
-            border-radius: 15px; 
-            margin-top: 10px; 
-            min-width: 180px; 
-            min-height: 180px;
+            background: white; padding: 12px; display: inline-block; border-radius: 15px; 
+            margin-top: 10px; min-width: 160px; min-height: 160px;
         }
-        #qrcode img {
-            margin: 0 auto;
-        }
-        #user_name { 
-            color: #d4a373; 
-            font-size: 18px; 
-            margin-bottom: 10px; 
-            font-weight: 500;
-        }
+        #qrcode img { margin: 0 auto; display: block; }
     </style>
 </head>
 <body>
@@ -72,50 +34,52 @@
         <div id="user_name">ЗАГРУЗКА...</div>
         <h2>ВАШ БАЛАНС</h2>
         <div id="balance">0.00</div>
-        <div id="qrcode"></div>
+        <div id="qrcode">Загрузка QR...</div>
     </div>
 
     <script>
-        // Функция инициализации, которая сработает после загрузки всех скриптов
-        window.onload = function() {
-            const tg = window.Telegram.WebApp;
-            
-            // Сообщаем Telegram, что приложение готово
-            tg.ready();
-            tg.expand();
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.ready();
 
-            // 1. Получаем данные пользователя из Telegram
+        function init() {
+            // 1. Данные пользователя
             const user = tg.initDataUnsafe.user;
             const userId = user ? user.id : "000000";
-            const firstName = user ? user.first_name : "ГОСТЬ";
-            const lastName = user && user.last_name ? user.last_name : "";
-            
-            document.getElementById('user_name').innerText = firstName + " " + lastName;
+            document.getElementById('user_name').innerText = user ? (user.first_name + " " + (user.last_name || "")) : "ГОСТЬ";
 
-            // 2. Получаем баланс из URL параметров (?bal=123.45)
+            // 2. Баланс из URL
             const urlParams = new URLSearchParams(window.location.search);
             const bal = urlParams.get('bal') || "0.00";
             document.getElementById('balance').innerText = bal + " б.";
 
-            // 3. Генерация QR-кода (пример, можно изменить текст)
-            const qrContainer = document.getElementById("qrcode");
-            qrContainer.innerHTML = ""; // Очищаем контейнер от текста "Загрузка"
+            // 3. Попытка генерации QR (цикличная, если библиотека тупит)
+            const qrDiv = document.getElementById("qrcode");
+            
+            let attempts = 0;
+            const qrInterval = setInterval(() => {
+                attempts++;
+                if (typeof QRCode !== "undefined") {
+                    qrDiv.innerHTML = "";
+                    new QRCode(qrDiv, {
+                        text: "USER:" + userId,
+                        width: 160,
+                        height: 160,
+                        colorDark : "#000000",
+                        colorLight : "#ffffff",
+                        correctLevel : QRCode.CorrectLevel.M
+                    });
+                    clearInterval(qrInterval);
+                } else if (attempts > 50) {
+                    qrDiv.innerText = "Ошибка сети";
+                    clearInterval(qrInterval);
+                }
+            }, 200);
+        }
 
-            try {
-                // Создаем QR-код
-                new QRCode(qrContainer, {
-                    text: "Ваша кофейная карта", // Пример текста, можно изменить
-                    width: 180,
-                    height: 180,
-                    colorDark : "#000000",
-                    colorLight : "#ffffff",
-                    correctLevel : QRCode.CorrectLevel.H
-                });
-            } catch (err) {
-                console.error("Ошибка при создании QR:", err);
-                qrContainer.innerHTML = "<p style='color:black;font-size:12px;'>Ошибка загрузки QR</p>";
-            }
-        };
+        // Запуск
+        if (document.readyState === "complete") { init(); } 
+        else { window.addEventListener("load", init); }
     </script>
 </body>
 </html>
