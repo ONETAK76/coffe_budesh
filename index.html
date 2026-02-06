@@ -3,80 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Coffee Menu & Card</title>
+    <title>Coffee Menu</title>
+    <!-- Быстрые ссылки на библиотеки -->
     <script src="https://telegram.org"></script>
     <script src="https://cdnjs.cloudflare.com"></script>
     <style>
-        :root { --main-bg: #1a1a1a; --card-bg: #262626; --accent: #d4a373; --text-main: #ffffff; --text-muted: #a0a0a0; }
-        body { background: var(--main-bg); color: var(--text-main); font-family: -apple-system, system-ui, sans-serif; margin: 0; padding-bottom: 30px; }
+        :root { --bg: #1a1a1a; --card: #2c2c2c; --accent: #d4a373; --white: #ffffff; }
+        body { background: var(--bg); color: var(--white); font-family: -apple-system, sans-serif; margin: 0; padding: 20px; text-align: center; }
         
-        /* Шапка с картой */
-        .header { background: linear-gradient(135deg, #6f4e37 0%, #3c2a21 100%); padding: 25px 20px; text-align: center; border-bottom: 1px solid #444; position: sticky; top: 0; z-index: 100; }
-        #user_name { font-size: 18px; font-weight: bold; margin-bottom: 5px; color: var(--accent); }
-        .balance-box { font-size: 28px; font-weight: 800; margin: 10px 0; }
-        .balance-label { font-size: 12px; opacity: 0.7; text-transform: uppercase; letter-spacing: 1px; }
-        
-        #qrcode { background: white; padding: 10px; display: inline-block; border-radius: 12px; margin-top: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-        #qrcode img { display: block; }
+        /* Секция карты */
+        .user-info { margin-bottom: 20px; }
+        #user_name { font-size: 20px; font-weight: bold; color: var(--accent); }
+        #qrcode { background: white; padding: 10px; display: inline-block; border-radius: 12px; margin: 15px 0; }
+        #qrcode img { display: block; margin: 0 auto; }
+        .hint { font-size: 12px; opacity: 0.6; margin-bottom: 30px; }
 
-        /* Сетка меню */
-        .menu-title { padding: 20px 15px 10px; font-size: 22px; font-weight: bold; }
-        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 12px; }
-        
-        .product-card { background: var(--card-bg); border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; border: 1px solid #333; }
-        .product-img { width: 100%; height: 130px; object-fit: cover; background: #333; }
-        .product-info { padding: 12px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
-        .product-name { font-size: 15px; font-weight: 600; margin: 0 0 5px 0; }
-        .product-desc { font-size: 11px; color: var(--text-muted); line-height: 1.3; margin-bottom: 10px; height: 28px; overflow: hidden; }
-        .product-price { font-size: 17px; font-weight: 700; color: var(--accent); }
+        /* Секция меню (без картинок) */
+        .menu-title { text-align: left; font-size: 22px; font-weight: bold; margin: 20px 0 15px; border-bottom: 1px solid #444; padding-bottom: 5px; }
+        .menu-list { text-align: left; }
+        .product-item { background: var(--card); margin-bottom: 10px; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #333; }
+        .product-details { flex: 1; padding-right: 15px; }
+        .product-name { font-size: 16px; font-weight: 600; margin: 0; }
+        .product-desc { font-size: 12px; color: #aaa; margin: 4px 0 0; line-height: 1.3; }
+        .product-price { font-size: 18px; font-weight: bold; color: var(--accent); white-space: nowrap; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div id="user_name">ЗАГРУЗКА...</div>
-        <div class="balance-label">Бонусный баланс</div>
-        <div class="balance-box"><span id="balance">0.00</span> б.</div>
+
+    <div class="user-info">
+        <div id="user_name">Загрузка...</div>
         <div id="qrcode"></div>
+        <div class="hint">Покажите QR-код бариста для начисления бонусов</div>
     </div>
 
-    <div class="menu-title">☕️ Наше Меню</div>
+    <div class="menu-title">☕️ Меню</div>
     
-    <div class="menu-grid">
+    <div class="menu-list">
         <!-- ТОВАР 1 -->
-        <div class="product-card">
-            <img src="https://images.unsplash.com" class="product-img">
-            <div class="product-info">
-                <div class="product-name">Капучино</div>
-                <div class="product-desc">Классический эспрессо с пышной молочной пенкой</div>
-                <div class="product-price">180 ₽</div>
+        <div class="product-item">
+            <div class="product-details">
+                <p class="product-name">Капучино</p>
+                <p class="product-desc">Классический эспрессо с пышной молочной пенкой</p>
             </div>
+            <div class="product-price">180 ₽</div>
         </div>
+
         <!-- ТОВАР 2 -->
-        <div class="product-card">
-            <img src="https://images.unsplash.com" class="product-img">
-            <div class="product-info">
-                <div class="product-name">Латте</div>
-                <div class="product-desc">Много нежного молока и капля крепкого кофе</div>
-                <div class="product-price">210 ₽</div>
+        <div class="product-item">
+            <div class="product-details">
+                <p class="product-name">Латте</p>
+                <p class="product-desc">Нежное молоко с добавлением порции эспрессо</p>
             </div>
+            <div class="product-price">210 ₽</div>
         </div>
+
         <!-- ТОВАР 3 -->
-        <div class="product-card">
-            <img src="https://images.unsplash.com" class="product-img">
-            <div class="product-info">
-                <div class="product-name">Раф Кофе</div>
-                <div class="product-desc">Сливочный десертный вкус с ванильным сахаром</div>
-                <div class="product-price">250 ₽</div>
+        <div class="product-item">
+            <div class="product-details">
+                <p class="product-name">Раф Кофе</p>
+                <p class="product-desc">Сливочный вкус с ванильным ароматом</p>
             </div>
+            <div class="product-price">250 ₽</div>
         </div>
+
         <!-- ТОВАР 4 -->
-        <div class="product-card">
-            <img src="https://images.unsplash.com" class="product-img">
-            <div class="product-info">
-                <div class="product-name">Американо</div>
-                <div class="product-desc">Классика для тех, кто ценит чистый вкус зерен</div>
-                <div class="product-price">150 ₽</div>
+        <div class="product-item">
+            <div class="product-details">
+                <p class="product-name">Американо</p>
+                <p class="product-desc">Крепкий кофе на основе эспрессо и воды</p>
             </div>
+            <div class="product-price">150 ₽</div>
         </div>
     </div>
 
@@ -85,33 +81,28 @@
         tg.expand();
         tg.ready();
 
-        // 1. Имя пользователя
+        // Имя пользователя
         const user = tg.initDataUnsafe.user;
         document.getElementById('user_name').innerText = user ? (user.first_name + " " + (user.last_name || "")) : "ГОСТЬ";
 
-        // 2. Баланс из ссылки
-        const urlParams = new URLSearchParams(window.location.search);
-        document.getElementById('balance').innerText = urlParams.get('bal') || "0.00";
-
-        // 3. Генерация QR
+        // Генерация QR
         const qrBox = document.getElementById("qrcode");
         const checkLib = setInterval(() => {
             if (typeof QRCode !== "undefined") {
                 qrBox.innerHTML = "";
                 new QRCode(qrBox, {
                     text: "USER:" + (user ? user.id : "000000"),
-                    width: 130,
-                    height: 130,
+                    width: 150,
+                    height: 150,
                     colorDark : "#000000",
                     colorLight : "#ffffff",
                     correctLevel : QRCode.CorrectLevel.M
                 });
                 clearInterval(checkLib);
             }
-        }, 100);
+        }, 50); // Уменьшили интервал для более быстрой отрисовки
     </script>
 </body>
 </html>
-
 
 
