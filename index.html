@@ -1,24 +1,81 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Coffee Budes</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://telegram.org"></script>
-    <script src="https://cdnjs.cloudflare.com"></script>
-    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net"></script>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 20px; background: #f0f0f0; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        #admin-panel { display: none; margin-top: 20px; border-top: 1px solid #ccc; padding-top: 20px; }
+        button { background: #0088cc; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; }
+        input { padding: 10px; width: 80%; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; }
+    </style>
 </head>
 <body>
-    <div class="card-container">
-        <div class="loyalty-card">
-            <div class="card-header"><span class="brand">COFFEE BUDES</span></div>
-            <div id="qrcode"></div>
-            <div class="card-footer">ID: <span id="uid-label">---</span></div>
-        </div>
+    <div class="card">
+        <h3>Ваша карта</h3>
+        <svg id="barcode"></svg>
+        <p>Баланс: <span id="balance">0</span> баллов</p>
     </div>
-    <div class="grid" id="grid"></div>
-    <script src="products.js"></script>
-    <script src="app.js"></script>
+
+    <div id="admin-panel">
+        <button onclick="startScan()">Сканировать штрихкод</button>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        const userId = tg.initDataUnsafe.user.id;
+        const API_URL = 'https://ваш-домен.com'; // ЗАМЕНИТЕ НА ВАШ
+
+        // Инициализация данных
+        fetch(`${API_URL}/get_data`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({user_id: userId})
+        })
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('balance').innerText = data.balance;
+            if(data.is_admin) document.getElementById('admin-panel').style.display = 'block';
+            JsBarcode("#barcode", userId.toString(), {format: "CODE128", displayValue: true});
+        });
+
+        function startScan() {
+            tg.showScanQrPopup({ text: "Отсканируйте штрихкод клиента" }, (result) => {
+                const targetId = result;
+                const amount = prompt("Введите сумму операции:");
+                if(!amount || isNaN(amount)) return true;
+
+                if(confirm("Начислить 3% (ОК) или Списать баллы (Отмена)?")) {
+                    processTx(targetId, amount, 'add');
+                } else {
+                    processTx(targetId, amount, 'sub');
+                }
+                return true;
+            });
+        }
+
+        function processTx(targetId, amount, action) {
+            fetch(`${API_URL}/transaction`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    admin_id: userId,
+                    target_id: targetId,
+                    amount: amount,
+                    action: action
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.message);
+                location.reload();
+            });
+        }
+    </script>
 </body>
 </html>
 
