@@ -1,57 +1,121 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Coffee Card</title>
-    <!-- Подключаем библиотеку QR -->
+    
+    <!-- ПОЛНАЯ ССЫЛКА НА БИБЛИОТЕКУ QR -->
     <script src="https://cdnjs.cloudflare.com"></script>
-    <!-- Подключаем скрипт Telegram -->
+    
+    <!-- ПОЛНАЯ ССЫЛКА НА TELEGRAM API -->
     <script src="https://telegram.org"></script>
+
     <style>
-        body { background: #1a1a1a; color: white; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { background: linear-gradient(135deg, #6f4e37 0%, #3c2a21 100%); width: 85%; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; border: 1px solid #8b5e3c; }
-        h2 { margin: 0; color: #edc9af; text-transform: uppercase; letter-spacing: 2px; font-size: 18px; }
-        #balance { font-size: 42px; margin: 15px 0; color: #fff; font-weight: bold; }
-        #qrcode { background: white; padding: 15px; display: inline-block; border-radius: 15px; margin-top: 10px; min-width: 128px; min-height: 128px; }
-        #user_name { color: #d4a373; font-size: 16px; margin-bottom: 5px; }
+        body { 
+            background: #1a1a1a; 
+            color: white; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+            overflow: hidden;
+        }
+        .card { 
+            background: linear-gradient(135deg, #6f4e37 0%, #3c2a21 100%); 
+            width: 85%; 
+            max-width: 350px;
+            padding: 30px; 
+            border-radius: 25px; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6); 
+            text-align: center; 
+            border: 1px solid #8b5e3c; 
+        }
+        h2 { 
+            margin: 0; 
+            color: #edc9af; 
+            text-transform: uppercase; 
+            letter-spacing: 2px; 
+            font-size: 16px; 
+        }
+        #balance { 
+            font-size: 48px; 
+            margin: 15px 0; 
+            color: #fff; 
+            font-weight: bold; 
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        #qrcode { 
+            background: white; 
+            padding: 15px; 
+            display: inline-block; 
+            border-radius: 15px; 
+            margin-top: 10px; 
+            min-width: 180px; 
+            min-height: 180px;
+        }
+        #qrcode img {
+            margin: 0 auto;
+        }
+        #user_name { 
+            color: #d4a373; 
+            font-size: 18px; 
+            margin-bottom: 10px; 
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
     <div class="card">
-        <p id="user_name">ЗАГРУЗКА...</p>
+        <div id="user_name">ЗАГРУЗКА...</div>
         <h2>ВАШ БАЛАНС</h2>
         <div id="balance">0.00</div>
         <div id="qrcode"></div>
     </div>
 
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-        tg.ready();
+        // Функция инициализации, которая сработает после загрузки всех скриптов
+        window.onload = function() {
+            const tg = window.Telegram.WebApp;
+            
+            // Сообщаем Telegram, что приложение готово
+            tg.ready();
+            tg.expand();
 
-        // 1. Получаем данные пользователя
-        const user = tg.initDataUnsafe.user;
-        const userId = user ? user.id : "000000";
-        document.getElementById('user_name').innerText = user ? (user.first_name + " " + (user.last_name || "")) : "ГОСТЬ";
+            // 1. Получаем данные пользователя из Telegram
+            const user = tg.initDataUnsafe.user;
+            const userId = user ? user.id : "000000";
+            const firstName = user ? user.first_name : "ГОСТЬ";
+            const lastName = user && user.last_name ? user.last_name : "";
+            
+            document.getElementById('user_name').innerText = firstName + " " + lastName;
 
-        // 2. Получаем баланс из параметров ссылки
-        const urlParams = new URLSearchParams(window.location.search);
-        const bal = urlParams.get('bal') || "0.00";
-        document.getElementById('balance').innerText = bal + " б.";
+            // 2. Получаем баланс из URL параметров (?bal=123.45)
+            const urlParams = new URLSearchParams(window.location.search);
+            const bal = urlParams.get('bal') || "0.00";
+            document.getElementById('balance').innerText = bal + " б.";
 
-        // 3. Генерируем QR-код
-        const qrContainer = document.getElementById("qrcode");
-        qrContainer.innerHTML = ""; // Очистка "Загрузки"
-        
-        new QRCode(qrContainer, {
-            text: "USER:" + userId,
-            width: 180,
-            height: 180,
-            colorDark : "#000000",
-            colorLight : "#ffffff",
-            correctLevel : QRCode.CorrectLevel.H
-        });
+            // 3. Генерация QR-кода (пример, можно изменить текст)
+            const qrContainer = document.getElementById("qrcode");
+            qrContainer.innerHTML = ""; // Очищаем контейнер от текста "Загрузка"
+
+            try {
+                // Создаем QR-код
+                new QRCode(qrContainer, {
+                    text: "Ваша кофейная карта", // Пример текста, можно изменить
+                    width: 180,
+                    height: 180,
+                    colorDark : "#000000",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.H
+                });
+            } catch (err) {
+                console.error("Ошибка при создании QR:", err);
+                qrContainer.innerHTML = "<p style='color:black;font-size:12px;'>Ошибка загрузки QR</p>";
+            }
+        };
     </script>
 </body>
 </html>
