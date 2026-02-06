@@ -1,18 +1,15 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <script src="https://telegram.org"></script>
-    <script src="https://unpkg.com"></script>
-</head>
-<body>
-    <div id="reader" style="width: 100vw; height: 100vh;"></div>
-    <script>
-        const tg = window.Telegram.WebApp;
-        const scanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
-        scanner.render((text) => {
-            tg.sendData(text); // Отправляет ID боту
-            tg.close();
-        });
-    </script>
-</body>
+<head><script src="https://telegram.org"></script></head>
+<body><script>
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.showScanQrPopup({ text: "Сканируй QR гостя" }, function(text) {
+        tg.sendData(text);
+        tg.closeScanQrPopup();
+        tg.close();
+        return true;
+    });
+</script></body>
 </html>
+
