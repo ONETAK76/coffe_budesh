@@ -6,78 +6,71 @@
     <script src="https://telegram.org"></script>
     <script src="https://cdn.jsdelivr.net"></script>
     <style>
-        body { font-family: sans-serif; text-align: center; padding: 20px; background: #f0f0f0; }
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        #admin-panel { display: none; margin-top: 20px; border-top: 1px solid #ccc; padding-top: 20px; }
-        button { background: #0088cc; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; }
-        input { padding: 10px; width: 80%; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; }
+        body { font-family: sans-serif; text-align: center; padding: 20px; background: #f4f4f9; }
+        .card { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        #barcode { width: 100%; max-width: 250px; }
+        #admin-panel { display: none; margin-top: 20px; }
+        button { background: #0088cc; color: white; border: none; padding: 15px; border-radius: 10px; width: 100%; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="card">
-        <h3>Ваша карта</h3>
+        <h3>Карта лояльности</h3>
         <svg id="barcode"></svg>
-        <p>Баланс: <span id="balance">0</span> баллов</p>
+        <p>Баланс: <b id="balance">0</b> ⭐️</p>
     </div>
 
     <div id="admin-panel">
-        <button onclick="startScan()">Сканировать штрихкод</button>
+        <button onclick="startScan()">СКАНИРОВАТЬ ШТРИХКОД</button>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
-        const userId = tg.initDataUnsafe.user.id;
-        const API_URL = 'https://ваш-домен.com'; // ЗАМЕНИТЕ НА ВАШ
 
-        // Инициализация данных
-        fetch(`${API_URL}/get_data`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({user_id: userId})
-        })
-        .then(res => res.json())
-        .then(data => {
-            document.getElementById('balance').innerText = data.balance;
-            if(data.is_admin) document.getElementById('admin-panel').style.display = 'block';
+        const userId = tg.initDataUnsafe?.user?.id || 12345;
+        // УКАЖИТЕ АДРЕС ВАШЕГО ПАЙТОН-СЕРВЕРА (например https://abc.ngrok-free.app)
+        const BACKEND_URL = 'https://ваш-пайтон-сервер.com';
+
+        function init() {
             JsBarcode("#barcode", userId.toString(), {format: "CODE128", displayValue: true});
-        });
+
+            fetch(`${BACKEND_URL}/get_data`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({user_id: userId})
+            })
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('balance').innerText = data.balance.toFixed(2);
+                if(data.is_admin) document.getElementById('admin-panel').style.display = 'block';
+            });
+        }
 
         function startScan() {
-            tg.showScanQrPopup({ text: "Отсканируйте штрихкод клиента" }, (result) => {
-                const targetId = result;
-                const amount = prompt("Введите сумму операции:");
+            tg.showScanQrPopup({ text: "Сканируйте ID клиента" }, (result) => {
+                if(!result) return true;
+                const amount = prompt("Сумма операции:");
                 if(!amount || isNaN(amount)) return true;
 
-                if(confirm("Начислить 3% (ОК) или Списать баллы (Отмена)?")) {
-                    processTx(targetId, amount, 'add');
-                } else {
-                    processTx(targetId, amount, 'sub');
-                }
+                const action = confirm("ОК - Начислить 3%\\nОтмена - Списать баллы") ? 'add' : 'sub';
+
+                fetch(`${BACKEND_URL}/transaction`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({admin_id: userId, target_id: result, amount: amount, action: action})
+                })
+                .then(r => r.json())
+                .then(data => { alert(data.message); location.reload(); });
                 return true;
             });
         }
-
-        function processTx(targetId, amount, action) {
-            fetch(`${API_URL}/transaction`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    admin_id: userId,
-                    target_id: targetId,
-                    amount: amount,
-                    action: action
-                })
-            })
-            .then(res => res.json())
-            .then(data => {
-                alert(data.message);
-                location.reload();
-            });
-        }
+        init();
     </script>
 </body>
 </html>
+
+
 
 
 
