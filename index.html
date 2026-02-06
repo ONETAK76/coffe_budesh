@@ -3,38 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Coffee Card</title>
-    <!-- Подключаем API Telegram -->
+    <title>Coffee Menu & Card</title>
     <script src="https://telegram.org"></script>
-    <!-- Встраиваем мини-библиотеку QRCode прямо сюда, чтобы не зависеть от внешних ссылок -->
-    <script src="https://davidshimjs.github.io"></script>
-
+    <script src="https://cdnjs.cloudflare.com"></script>
     <style>
-        body { 
-            background: #1a1a1a; color: white; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; overflow: hidden;
-        }
-        .card { 
-            background: linear-gradient(135deg, #6f4e37 0%, #3c2a21 100%); 
-            width: 280px; padding: 30px; border-radius: 25px; text-align: center; 
-            border: 1px solid #8b5e3c; box-shadow: 0 15px 35px rgba(0,0,0,0.5);
-        }
-        #user_name { color: #d4a373; font-size: 18px; margin-bottom: 5px; font-weight: bold; text-transform: uppercase; }
-        h2 { margin: 0; color: #edc9af; font-size: 14px; letter-spacing: 1px; opacity: 0.8; }
-        #balance { font-size: 44px; margin: 10px 0; color: #fff; font-weight: 900; }
-        #qrcode { 
-            background: white; padding: 12px; display: inline-block; border-radius: 15px; 
-            margin-top: 10px; min-width: 160px; min-height: 160px;
-        }
-        #qrcode img { margin: 0 auto; display: block; }
+        :root { --main-bg: #1a1a1a; --card-bg: #262626; --accent: #d4a373; --text-main: #ffffff; --text-muted: #a0a0a0; }
+        body { background: var(--main-bg); color: var(--text-main); font-family: -apple-system, system-ui, sans-serif; margin: 0; padding-bottom: 30px; }
+        
+        /* Шапка с картой */
+        .header { background: linear-gradient(135deg, #6f4e37 0%, #3c2a21 100%); padding: 25px 20px; text-align: center; border-bottom: 1px solid #444; position: sticky; top: 0; z-index: 100; }
+        #user_name { font-size: 18px; font-weight: bold; margin-bottom: 5px; color: var(--accent); }
+        .balance-box { font-size: 28px; font-weight: 800; margin: 10px 0; }
+        .balance-label { font-size: 12px; opacity: 0.7; text-transform: uppercase; letter-spacing: 1px; }
+        
+        #qrcode { background: white; padding: 10px; display: inline-block; border-radius: 12px; margin-top: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        #qrcode img { display: block; }
+
+        /* Сетка меню */
+        .menu-title { padding: 20px 15px 10px; font-size: 22px; font-weight: bold; }
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 12px; }
+        
+        .product-card { background: var(--card-bg); border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; border: 1px solid #333; }
+        .product-img { width: 100%; height: 130px; object-fit: cover; background: #333; }
+        .product-info { padding: 12px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
+        .product-name { font-size: 15px; font-weight: 600; margin: 0 0 5px 0; }
+        .product-desc { font-size: 11px; color: var(--text-muted); line-height: 1.3; margin-bottom: 10px; height: 28px; overflow: hidden; }
+        .product-price { font-size: 17px; font-weight: 700; color: var(--accent); }
     </style>
 </head>
 <body>
-    <div class="card">
+    <div class="header">
         <div id="user_name">ЗАГРУЗКА...</div>
-        <h2>ВАШ БАЛАНС</h2>
-        <div id="balance">0.00</div>
-        <div id="qrcode">Загрузка QR...</div>
+        <div class="balance-label">Бонусный баланс</div>
+        <div class="balance-box"><span id="balance">0.00</span> б.</div>
+        <div id="qrcode"></div>
+    </div>
+
+    <div class="menu-title">☕️ Наше Меню</div>
+    
+    <div class="menu-grid">
+        <!-- ТОВАР 1 -->
+        <div class="product-card">
+            <img src="https://images.unsplash.com" class="product-img">
+            <div class="product-info">
+                <div class="product-name">Капучино</div>
+                <div class="product-desc">Классический эспрессо с пышной молочной пенкой</div>
+                <div class="product-price">180 ₽</div>
+            </div>
+        </div>
+        <!-- ТОВАР 2 -->
+        <div class="product-card">
+            <img src="https://images.unsplash.com" class="product-img">
+            <div class="product-info">
+                <div class="product-name">Латте</div>
+                <div class="product-desc">Много нежного молока и капля крепкого кофе</div>
+                <div class="product-price">210 ₽</div>
+            </div>
+        </div>
+        <!-- ТОВАР 3 -->
+        <div class="product-card">
+            <img src="https://images.unsplash.com" class="product-img">
+            <div class="product-info">
+                <div class="product-name">Раф Кофе</div>
+                <div class="product-desc">Сливочный десертный вкус с ванильным сахаром</div>
+                <div class="product-price">250 ₽</div>
+            </div>
+        </div>
+        <!-- ТОВАР 4 -->
+        <div class="product-card">
+            <img src="https://images.unsplash.com" class="product-img">
+            <div class="product-info">
+                <div class="product-name">Американо</div>
+                <div class="product-desc">Классика для тех, кто ценит чистый вкус зерен</div>
+                <div class="product-price">150 ₽</div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -42,44 +85,30 @@
         tg.expand();
         tg.ready();
 
-        function init() {
-            // 1. Данные пользователя
-            const user = tg.initDataUnsafe.user;
-            const userId = user ? user.id : "000000";
-            document.getElementById('user_name').innerText = user ? (user.first_name + " " + (user.last_name || "")) : "ГОСТЬ";
+        // 1. Имя пользователя
+        const user = tg.initDataUnsafe.user;
+        document.getElementById('user_name').innerText = user ? (user.first_name + " " + (user.last_name || "")) : "ГОСТЬ";
 
-            // 2. Баланс из URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const bal = urlParams.get('bal') || "0.00";
-            document.getElementById('balance').innerText = bal + " б.";
+        // 2. Баланс из ссылки
+        const urlParams = new URLSearchParams(window.location.search);
+        document.getElementById('balance').innerText = urlParams.get('bal') || "0.00";
 
-            // 3. Попытка генерации QR (цикличная, если библиотека тупит)
-            const qrDiv = document.getElementById("qrcode");
-            
-            let attempts = 0;
-            const qrInterval = setInterval(() => {
-                attempts++;
-                if (typeof QRCode !== "undefined") {
-                    qrDiv.innerHTML = "";
-                    new QRCode(qrDiv, {
-                        text: "USER:" + userId,
-                        width: 160,
-                        height: 160,
-                        colorDark : "#000000",
-                        colorLight : "#ffffff",
-                        correctLevel : QRCode.CorrectLevel.M
-                    });
-                    clearInterval(qrInterval);
-                } else if (attempts > 50) {
-                    qrDiv.innerText = "Ошибка сети";
-                    clearInterval(qrInterval);
-                }
-            }, 200);
-        }
-
-        // Запуск
-        if (document.readyState === "complete") { init(); } 
-        else { window.addEventListener("load", init); }
+        // 3. Генерация QR
+        const qrBox = document.getElementById("qrcode");
+        const checkLib = setInterval(() => {
+            if (typeof QRCode !== "undefined") {
+                qrBox.innerHTML = "";
+                new QRCode(qrBox, {
+                    text: "USER:" + (user ? user.id : "000000"),
+                    width: 130,
+                    height: 130,
+                    colorDark : "#000000",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.M
+                });
+                clearInterval(checkLib);
+            }
+        }, 100);
     </script>
 </body>
 </html>
