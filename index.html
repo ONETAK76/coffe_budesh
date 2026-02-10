@@ -3,22 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Coffee Menu</title>
-    <!-- Быстрые ссылки на библиотеки -->
+    <title>Кофе Будешь? — Меню</title>
+    <!-- ПОДКЛЮЧАЕМ ТЕЛЕГРАМ И ГЕНЕРАТОР QR ПРАВИЛЬНО -->
     <script src="https://telegram.org"></script>
     <script src="https://cdnjs.cloudflare.com"></script>
+    
     <style>
         :root { --bg: #1a1a1a; --card: #2c2c2c; --accent: #d4a373; --white: #ffffff; }
         body { background: var(--bg); color: var(--white); font-family: -apple-system, sans-serif; margin: 0; padding: 20px; text-align: center; }
         
-        /* Секция карты */
         .user-info { margin-bottom: 20px; }
         #user_name { font-size: 20px; font-weight: bold; color: var(--accent); }
-        #qrcode { background: white; padding: 10px; display: inline-block; border-radius: 12px; margin: 15px 0; }
+        
+        /* СТИЛЬ ДЛЯ БАЛАНСА */
+        .balance-badge { display: inline-block; background: var(--accent); color: #000; padding: 5px 15px; border-radius: 20px; font-weight: bold; margin-top: 8px; font-size: 14px; }
+
+        #qrcode { background: white; padding: 10px; display: inline-block; border-radius: 12px; margin: 15px 0; min-width: 150px; min-height: 150px; }
         #qrcode img { display: block; margin: 0 auto; }
         .hint { font-size: 12px; opacity: 0.6; margin-bottom: 30px; }
 
-        /* Секция меню (без картинок) */
         .menu-title { text-align: left; font-size: 22px; font-weight: bold; margin: 20px 0 15px; border-bottom: 1px solid #444; padding-bottom: 5px; }
         .menu-list { text-align: left; }
         .product-item { background: var(--card); margin-bottom: 10px; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #333; }
@@ -32,47 +35,35 @@
 
     <div class="user-info">
         <div id="user_name">Загрузка...</div>
+        <div id="balance" class="balance-badge">0.00 бонусов</div>
+        <br>
         <div id="qrcode"></div>
-        <div class="hint">Покажите QR-код бариста для начисления бонусов</div>
+        <div class="hint">Покажите QR бариста при оплате</div>
     </div>
 
-    <div class="menu-title">☕️ Классические напитки</div>
+    <div class="menu-title">☕️ Классика</div>
     
     <div class="menu-list">
-        <!-- ТОВАР 1 -->
         <div class="product-item">
             <div class="product-details">
                 <p class="product-name">Эспрессо</p>
-                <p class="product-desc">Арабика средней обжарки из Питера прямиком в вашу чашку!</p>
+                <p class="product-desc">Арабика из Питера прямиком в вашу чашку!</p>
             </div>
             <div class="product-price">150 ₽</div>
         </div>
-
-        <!-- ТОВАР 2 -->
         <div class="product-item">
             <div class="product-details">
                 <p class="product-name">Латте</p>
-                <p class="product-desc">Нежное молоко с добавлением порции эспрессо</p>
+                <p class="product-desc">Нежное молоко с порцией эспрессо</p>
             </div>
             <div class="product-price">210 ₽</div>
         </div>
-
-        <!-- ТОВАР 3 -->
         <div class="product-item">
             <div class="product-details">
                 <p class="product-name">Раф Кофе</p>
                 <p class="product-desc">Сливочный вкус с ванильным ароматом</p>
             </div>
             <div class="product-price">250 ₽</div>
-        </div>
-
-        <!-- ТОВАР 4 -->
-        <div class="product-item">
-            <div class="product-details">
-                <p class="product-name">Американо</p>
-                <p class="product-desc">Крепкий кофе на основе эспрессо и воды</p>
-            </div>
-            <div class="product-price">150 ₽</div>
         </div>
     </div>
 
@@ -81,26 +72,33 @@
         tg.expand();
         tg.ready();
 
-        // Имя пользователя
+        // 1. Получаем данные пользователя
         const user = tg.initDataUnsafe.user;
         document.getElementById('user_name').innerText = user ? (user.first_name + " " + (user.last_name || "")) : "ГОСТЬ";
 
-        // Генерация QR
+        // 2. Получаем баланс из URL (который передает бот)
+        const urlParams = new URLSearchParams(window.location.search);
+        const bal = urlParams.get('bal') || "0.00";
+        document.getElementById('balance').innerText = bal + " бонусов";
+
+        // 3. Генерация QR
         const qrBox = document.getElementById("qrcode");
-        const checkLib = setInterval(() => {
+        
+        // Ждем загрузки библиотеки и рисуем
+        window.onload = function() {
             if (typeof QRCode !== "undefined") {
-                qrBox.innerHTML = "";
                 new QRCode(qrBox, {
                     text: "USER:" + (user ? user.id : "000000"),
                     width: 150,
                     height: 150,
-                    colorDark : "#000000",
+                    colorDark : "#1a1a1a",
                     colorLight : "#ffffff",
                     correctLevel : QRCode.CorrectLevel.M
                 });
-                clearInterval(checkLib);
+            } else {
+                qrBox.innerText = "Ошибка QR";
             }
-        }, 50); // Уменьшили интервал для более быстрой отрисовки
+        };
     </script>
 </body>
 </html>
