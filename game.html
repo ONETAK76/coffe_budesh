@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Coffee Jump</title>
-    <!-- ИСПРАВЛЕНО: Правильная библиотека Telegram -->
+    <!-- ИСПРАВЛЕНО: Ссылка на JS библиотеку (добавлено /js/telegram-web-app.js) -->
     <script src="https://telegram.org"></script>
     <style>
         body { margin: 0; background: #1a1a1a; color: #fff; font-family: sans-serif; overflow: hidden; touch-action: none; }
@@ -13,12 +13,12 @@
         #score { font-size: 40px; font-weight: bold; color: #d4a373; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
         .start-screen { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.8); display: flex; flex-direction: column; 
+            background: rgba(0,0,0,0.9); display: flex; flex-direction: column; 
             align-items: center; justify-content: center; z-index: 20;
         }
         button { 
-            background: #d4a373; border: none; padding: 15px 40px; 
-            border-radius: 30px; font-weight: bold; font-size: 20px; cursor: pointer; color: white;
+            background: #d4a373; border: none; padding: 18px 50px; 
+            border-radius: 30px; font-weight: bold; font-size: 22px; cursor: pointer; color: white;
             box-shadow: 0 4px 15px rgba(212, 163, 115, 0.4);
         }
         button:active { transform: scale(0.95); }
@@ -27,21 +27,26 @@
 <body>
     <div class="ui"><div id="score">0</div></div>
     <div id="startScreen" class="start-screen">
-        <h2 id="statusTitle" style="color: #d4a373;">COFFEE JUMP</h2>
-        <p>Нажимай, чтобы прыгать стаканчиком!</p>
+        <h2 id="statusTitle" style="color: #d4a373; margin-bottom: 10px;">COFFEE JUMP</h2>
+        <p style="margin-bottom: 25px;">Нажимай, чтобы прыгать стаканчиком!</p>
         <button onclick="startGame()">ПОЕХАЛИ</button>
     </div>
     <canvas id="game"></canvas>
 
     <script>
+        // Безопасная инициализация Telegram
         const tg = window.Telegram.WebApp;
-        tg.expand();
-        tg.ready();
+        
+        try {
+            tg.expand();
+            tg.ready();
+        } catch (e) {
+            console.error("Telegram WebApp не найден");
+        }
 
         const canvas = document.getElementById("game");
         const ctx = canvas.getContext("2d");
         
-        // Подгонка размера под экран
         function resize() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
@@ -54,7 +59,6 @@
         let frame = 0;
         let obstacles = [];
         
-        // Настройки игрока
         let player = { 
             x: 50, 
             y: 0, 
@@ -66,6 +70,7 @@
         };
 
         function startGame() {
+            console.log("Старт игры...");
             score = 0;
             obstacles = [];
             player.y = canvas.height / 2;
@@ -76,14 +81,14 @@
             document.getElementById("startScreen").style.display = "none";
             document.getElementById("score").innerText = "0";
             
-            tg.MainButton.hide();
-            loop();
+            if (tg.MainButton) tg.MainButton.hide();
+            
+            requestAnimationFrame(loop);
         }
 
-        // Прыжок
         const handleAction = (e) => {
-            if (e) e.preventDefault();
             if (gameActive) {
+                if (e && e.type === 'touchstart') e.preventDefault();
                 player.dy = player.jump;
             }
         };
@@ -92,7 +97,6 @@
         window.addEventListener("mousedown", handleAction);
 
         function spawnObstacle() {
-            // Создаем кактус/препятствие каждые 90 кадров
             if (frame % 90 === 0) {
                 let h = 60 + Math.random() * 40;
                 obstacles.push({ 
@@ -109,37 +113,33 @@
             frame++;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Отрисовка земли
+            // Земля
             ctx.fillStyle = "#3d3d3d";
             ctx.fillRect(0, canvas.height - 20, canvas.width, 20);
 
-            // Физика игрока
+            // Физика
             player.dy += player.gravity;
             player.y += player.dy;
 
-            // Ограничение пола
             if (player.y > canvas.height - player.h - 20) {
                 player.y = canvas.height - player.h - 20;
                 player.dy = 0;
             }
 
-            // Рисуем игрока (Стаканчик)
+            // Рисуем стаканчик
             ctx.fillStyle = "#d4a373";
             ctx.fillRect(player.x, player.y, player.w, player.h);
-            // Ободок стаканчика
             ctx.fillStyle = "#fff";
             ctx.fillRect(player.x - 2, player.y, player.w + 4, 10);
 
-            // Препятствия
             spawnObstacle();
             for (let i = obstacles.length - 1; i >= 0; i--) {
                 let obs = obstacles[i];
-                obs.x -= (5 + (score / 10)); // Ускорение со временем
+                obs.x -= (5 + (score / 15));
 
                 ctx.fillStyle = "#ff4444";
                 ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
 
-                // Коллизия (проверка столкновения)
                 if (player.x < obs.x + obs.w && 
                     player.x + player.w > obs.x &&
                     player.y < obs.y + obs.h && 
@@ -147,32 +147,28 @@
                     gameOver();
                 }
 
-                // Удаление и очки
                 if (obs.x + obs.w < 0) {
                     obstacles.splice(i, 1);
                     score++;
                     document.getElementById("score").innerText = score;
                 }
             }
-
             requestAnimationFrame(loop);
         }
 
         function gameOver() {
             gameActive = false;
             document.getElementById("startScreen").style.display = "flex";
-            document.getElementById("statusTitle").innerText = "БАЦ! СЧЕТ: " + score;
+            document.getElementById("statusTitle").innerText = "СЧЕТ: " + score;
             
-            // Если набрано больше 5 очков (или 10, как в боте)
             if (score >= 10) {
-                tg.MainButton.setText("ПОЛУЧИТЬ " + Math.floor(score/10) + " БОНУСОВ");
+                tg.MainButton.setText("ЗАБРАТЬ БОНУСЫ");
                 tg.MainButton.show();
             } else {
-                document.getElementById("statusTitle").innerText += "\n(Нужно 10 для бонуса)";
+                document.getElementById("statusTitle").innerText += "\nНужно 10 очков";
             }
         }
 
-        // Обработка кнопки отправки данных (вынесено из gameOver)
         tg.MainButton.onClick(() => {
             tg.sendData("GAME_SCORE:" + score);
         });
