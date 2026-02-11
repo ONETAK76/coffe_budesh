@@ -51,10 +51,10 @@
     </div>
 
     <div class="tabs">
-        <div class="tab active" onclick="showCategory('coffee')">☕️ Кофе</div>
-        <div class="tab" onclick="showCategory('tea')">🍵 Чай</div>
-        <div class="tab" onclick="showCategory('drinks')">🥤 Напитки</div>
-        <div class="tab" onclick="showCategory('food')">🥐 Еда</div>
+        <div class="tab active" onclick="showCategory('coffee', event)">☕️ Кофе</div>
+        <div class="tab" onclick="showCategory('tea', event)">🍵 Чай</div>
+        <div class="tab" onclick="showCategory('drinks', event)">🥤 Напитки</div>
+        <div class="tab" onclick="showCategory('food', event)">🥐 Еда</div>
     </div>
 
     <!-- КОФЕ -->
@@ -113,8 +113,10 @@
         tg.ready();
         tg.expand();
 
-        function showCategory(id) {
+        function showCategory(id, event) {
+            // Тактильная отдача при нажатии на категорию
             tg.HapticFeedback.impactOccurred('medium');
+
             // Переключаем вкладки
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             event.currentTarget.classList.add('active');
@@ -123,6 +125,13 @@
             document.querySelectorAll('.menu-section').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
         }
+
+        // Добавляем тактильный отклик для всех товаров при клике
+        document.querySelectorAll('.product-item').forEach(item => {
+            item.addEventListener('click', () => {
+                tg.HapticFeedback.selectionChanged();
+            });
+        });
 
         // Кнопка закрытия в углу (встроенная в TG)
         tg.MainButton.setText("ЗАКРЫТЬ МЕНЮ");
