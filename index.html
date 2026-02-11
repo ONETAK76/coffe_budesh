@@ -114,6 +114,7 @@
         tg.expand();
 
         function showCategory(id) {
+            tg.HapticFeedback.impactOccurred('medium');
             // Переключаем вкладки
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             event.currentTarget.classList.add('active');
